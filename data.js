@@ -347,6 +347,9 @@ function getLowStockProducts(threshold = 5) {
  * Initialize app with sample data
  */
 function initializeSampleData() {
+    // Disabled: Start with empty database
+    return;
+
     // Check if data already exists
     if (getProducts().length > 0) {
         return;

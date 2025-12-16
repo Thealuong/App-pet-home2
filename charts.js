@@ -17,9 +17,32 @@ function initTrendChart() {
         trendChartInstance.destroy();
     }
 
-    // Generate sample hourly data for today
+    // Get real hourly data from today's transactions
+    const today = new Date();
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const endOfDay = new Date(startOfDay.getTime() + 86400000 - 1);
+
+    const transactions = getTransactions().filter(t => {
+        const tDate = new Date(t.createdAt);
+        return t.type === 'sale' && tDate >= startOfDay && tDate <= endOfDay;
+    });
+
+    // Group by hour (6h intervals)
+    const hourlyData = {};
     const hours = ['6h', '9h', '12h', '15h', '18h', '21h'];
-    const data = [800000, 1500000, 2200000, 1800000, 2800000, 3200000];
+    hours.forEach(h => hourlyData[h] = 0);
+
+    transactions.forEach(t => {
+        const hour = new Date(t.createdAt).getHours();
+        if (hour >= 6 && hour < 9) hourlyData['6h'] += t.amount;
+        else if (hour >= 9 && hour < 12) hourlyData['9h'] += t.amount;
+        else if (hour >= 12 && hour < 15) hourlyData['12h'] += t.amount;
+        else if (hour >= 15 && hour < 18) hourlyData['15h'] += t.amount;
+        else if (hour >= 18 && hour < 21) hourlyData['18h'] += t.amount;
+        else if (hour >= 21 || hour < 6) hourlyData['21h'] += t.amount;
+    });
+
+    const data = hours.map(h => hourlyData[h]);
 
     trendChartInstance = new Chart(ctx, {
         type: 'line',
@@ -105,9 +128,26 @@ function initReportChart(type = 'revenue') {
     }
 
     if (type === 'revenue') {
-        // Revenue chart - hourly data
+        // Revenue chart - real hourly data
+        const range = getDateRange('today'); // Use current period from dashboard
+        const transactions = getTransactions().filter(t => {
+            const tDate = new Date(t.createdAt);
+            return t.type === 'sale' && tDate >= range.start && tDate <= range.end;
+        });
+
+        // Group by 4-hour intervals
+        const hourlyData = { '08:00': 0, '12:00': 0, '16:00': 0, '20:00': 0 };
         const hours = ['08:00', '12:00', '16:00', '20:00'];
-        const data = [2500000, 5800000, 8200000, 12500000];
+
+        transactions.forEach(t => {
+            const hour = new Date(t.createdAt).getHours();
+            if (hour >= 8 && hour < 12) hourlyData['08:00'] += t.amount;
+            else if (hour >= 12 && hour < 16) hourlyData['12:00'] += t.amount;
+            else if (hour >= 16 && hour < 20) hourlyData['16:00'] += t.amount;
+            else hourlyData['20:00'] += t.amount;
+        });
+
+        const data = hours.map(h => hourlyData[h]);
 
         reportChartInstance = new Chart(ctx, {
             type: 'line',
@@ -171,9 +211,31 @@ function initReportChart(type = 'revenue') {
             }
         });
     } else {
-        // Inventory chart - category stock levels
-        const categories = ['Đồ ăn', 'Phụ kiện', 'Đồ chơi', 'Quần áo'];
-        const data = [45, 32, 18, 25];
+        // Inventory chart - real category stock levels
+        const products = getProducts();
+        const categoryMap = {
+            'food': 'Đồ ăn',
+            'accessories': 'Phụ kiện',
+            'toys': 'Đồ chơi',
+            'clothes': 'Quần áo'
+        };
+
+        const categoryData = {
+            'Đồ ăn': 0,
+            'Phụ kiện': 0,
+            'Đồ chơi': 0,
+            'Quần áo': 0
+        };
+
+        products.forEach(p => {
+            const catName = categoryMap[p.category];
+            if (catName) {
+                categoryData[catName] += p.stock;
+            }
+        });
+
+        const categories = Object.keys(categoryData);
+        const data = Object.values(categoryData);
 
         reportChartInstance = new Chart(ctx, {
             type: 'bar',
