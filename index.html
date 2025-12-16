@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2196F3">
+    <meta name="description" content="Ứng dụng quản lý cửa hàng thú cưng">
+    <title>Quản lý Cửa hàng Thú cưng</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <!-- Main Container -->
+    <div id="app" class="app-container">
+
+        <!-- Dashboard Page -->
+        <div id="page-dashboard" class="page active">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <i data-lucide="store" class="store-icon"></i>
+                        <div>
+                            <div class="header-label">Trang quản lý</div>
+                            <div class="header-title">Cửa hàng Thú cưng</div>
+                        </div>
+                    </div>
+                    <button class="icon-btn" id="notificationBtn">
+                        <i data-lucide="bell"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Welcome Section -->
+                <div class="welcome-section">
+                    <h2 class="welcome-title">Xin chào, Quản lý!</h2>
+                    <p class="welcome-subtitle">Đây là tình hình kinh doanh của bạn.</p>
+
+                    <!-- Time Filter Tabs -->
+                    <div class="time-filter-tabs">
+                        <button class="tab-btn active" data-period="today">Hôm nay</button>
+                        <button class="tab-btn" data-period="week">Tuần này</button>
+                        <button class="tab-btn" data-period="month">Tháng này</button>
+                    </div>
+                </div>
+
+                <!-- Revenue Card -->
+                <div class="revenue-card">
+                    <div class="revenue-header">
+                        <div>
+                            <div class="revenue-label">
+                                <i data-lucide="trending-up" class="revenue-icon"></i>
+                                <span>Doanh thu hôm nay</span>
+                            </div>
+                            <div class="revenue-amount" id="revenueAmount">0 đ</div>
+                            <div class="revenue-change" id="revenueChange">
+                                <span class="change-icon">↗</span>
+                                <span class="change-text">+0%</span>
+                                <span class="change-label">so với hôm qua</span>
+                            </div>
+                        </div>
+                        <button class="icon-btn revenue-export">
+                            <i data-lucide="image"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon orders-icon">
+                            <i data-lucide="shopping-bag"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">ĐƠN HÀNG</div>
+                            <div class="stat-value" id="ordersCount">0</div>
+                            <div class="stat-change positive">
+                                <span>↑ 0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon profit-icon">
+                            <i data-lucide="trending-up"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">LỢI NHUẬN</div>
+                            <div class="stat-value" id="profitAmount">0 tr</div>
+                            <div class="stat-change positive">
+                                <span>↑ 0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trend Chart -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Xu hướng (Giờ)</h3>
+                        <a href="#" class="section-link">Chi tiết</a>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Stock Alerts -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Cảnh báo kho</h3>
+                        <a href="#" class="section-link" id="viewAllAlerts">Xem tất cả</a>
+                    </div>
+                    <div class="alerts-list" id="stockAlerts">
+                        <!-- Dynamic alerts will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Hoạt động gần đây</h3>
+                    </div>
+                    <div class="activities-list" id="recentActivities">
+                        <!-- Dynamic activities will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Bottom Spacing for Nav -->
+                <div class="bottom-spacing"></div>
+            </div>
+        </div>
+
+        <!-- Products Page -->
+        <div id="page-products" class="page">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-content">
+                    <h1 class="page-header-title">Sản phẩm</h1>
+                    <button class="icon-btn primary" id="addProductBtn">
+                        <i data-lucide="plus"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Search Bar -->
+                <div class="search-bar">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" placeholder="Tìm kiếm tên, mã SKU..." id="productSearch">
+                    <button class="filter-btn" id="filterToggle">
+                        <i data-lucide="sliders-horizontal"></i>
+                    </button>
+                </div>
+
+                <!-- Category Filter Tabs -->
+                <div class="category-tabs" id="categoryTabs">
+                    <button class="category-tab active" data-category="all">Tất cả</button>
+                    <button class="category-tab" data-category="out-of-stock">Hết hàng</button>
+                    <button class="category-tab" data-category="low-stock">Sắp hết</button>
+                    <button class="category-tab" data-category="food">Đồ ăn</button>
+                    <button class="category-tab" data-category="accessories">Phụ kiện</button>
+                </div>
+
+                <!-- Product Header -->
+                <div class="product-header">
+                    <span class="product-count" id="productCount">0 sản phẩm</span>
+                    <button class="sort-btn" id="sortBtn">
+                        Sắp xếp
+                        <i data-lucide="chevron-down"></i>
+                    </button>
+                </div>
+
+                <!-- Products List -->
+                <div class="products-list" id="productsList">
+                    <!-- Dynamic products will be inserted here -->
+                </div>
+
+                <!-- Bottom Spacing for Nav -->
+                <div class="bottom-spacing"></div>
+            </div>
+        </div>
+
+        <!-- Reports Page -->
+        <div id="page-reports" class="page">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-content">
+                    <button class="icon-btn" id="backBtn">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                    <h1 class="page-header-title">Báo cáo</h1>
+                    <button class="icon-btn" id="shareBtn">
+                        <i data-lucide="share-2"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Time Period Tabs -->
+                <div class="time-filter-tabs compact">
+                    <button class="tab-btn active" data-period="today">Hôm nay</button>
+                    <button class="tab-btn" data-period="week">Tuần này</button>
+                    <button class="tab-btn" data-period="month">Tháng này</button>
+                    <button class="tab-btn" data-period="custom">Tùy chỉnh</button>
+                </div>
+
+                <!-- Revenue Summary Card -->
+                <div class="revenue-summary-card">
+                    <div class="revenue-summary-header">
+                        <i data-lucide="wallet" class="summary-icon"></i>
+                        <span>Doanh thu</span>
+                    </div>
+                    <div class="revenue-summary-amount" id="reportRevenueAmount">0đ</div>
+                    <div class="revenue-summary-footer">
+                        So với hôm qua (<span id="reportRevenueComparison">0đ</span>)
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="report-stats-grid">
+                    <div class="report-stat-card">
+                        <div class="report-stat-icon">
+                            <i data-lucide="file-text"></i>
+                        </div>
+                        <div class="report-stat-content">
+                            <div class="report-stat-label">Đơn hàng</div>
+                            <div class="report-stat-value" id="reportOrdersCount">0</div>
+                            <div class="report-stat-change positive">
+                                ↑ <span id="reportOrdersChange">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-stat-card">
+                        <div class="report-stat-icon profit">
+                            <i data-lucide="trending-up"></i>
+                        </div>
+                        <div class="report-stat-content">
+                            <div class="report-stat-label">Lợi nhuận</div>
+                            <div class="report-stat-value" id="reportProfitAmount">0 tr</div>
+                            <div class="report-stat-change negative">
+                                <span id="reportProfitChange">-0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Tabs -->
+                <div class="chart-tabs">
+                    <button class="chart-tab active" data-chart="revenue">Doanh thu</button>
+                    <button class="chart-tab" data-chart="inventory">Kho hàng</button>
+                </div>
+
+                <!-- Chart Section -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Biến động</h3>
+                        <button class="icon-btn-sm">
+                            <i data-lucide="more-horizontal"></i>
+                        </button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="reportChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Top Selling Products -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Top sản phẩm bán chạy</h3>
+                        <a href="#" class="section-link">Xem tất cả</a>
+                    </div>
+                    <div class="top-products-list" id="topProductsList">
+                        <!-- Dynamic top products will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Stock Alerts -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Cảnh báo kho</h3>
+                    </div>
+                    <div class="alerts-list" id="reportStockAlerts">
+                        <!-- Dynamic alerts will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Export Button -->
+                <button class="export-btn">
+                    <i data-lucide="download"></i>
+                    <span>Xuất báo cáo</span>
+                </button>
+
+                <!-- Bottom Spacing for Nav -->
+                <div class="bottom-spacing"></div>
+            </div>
+        </div>
+
+        <!-- Orders Page -->
+        <div id="page-orders" class="page">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-content">
+                    <h1 class="page-header-title">Đơn hàng</h1>
+                    <button class="icon-btn" id="viewHistoryBtn">
+                        <i data-lucide="history"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- POS View (default) -->
+                <div id="posView">
+                    <!-- Cart Summary -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3 class="section-title">Giỏ hàng</h3>
+                            <button class="btn-secondary" id="clearCartBtn" style="padding: 8px 16px; font-size: 13px;">
+                                Xóa tất cả
+                            </button>
+                        </div>
+                        <div id="cartItems" class="cart-items">
+                            <div class="empty-cart">
+                                <i data-lucide="shopping-cart" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+                                <p>Giỏ hàng trống</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Selection -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3 class="section-title">Chọn sản phẩm</h3>
+                        </div>
+
+                        <!-- Search -->
+                        <div class="search-bar" style="margin-bottom: 16px;">
+                            <i data-lucide="search" class="search-icon"></i>
+                            <input type="text" placeholder="Tìm sản phẩm hoặc quét mã..." id="orderProductSearch">
+                        </div>
+
+                        <!-- Available Products -->
+                        <div id="orderProductsList" class="order-products-list">
+                            <!-- Products will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Cart Total & Checkout -->
+                    <div class="cart-summary-fixed" id="cartSummary" style="display: none;">
+                        <div class="cart-summary-content">
+                            <div>
+                                <div class="cart-summary-label">Tổng cộng</div>
+                                <div class="cart-summary-total" id="cartTotal">0 đ</div>
+                            </div>
+                            <button class="btn-primary" id="checkoutBtn">
+                                Thanh toán
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order History View -->
+                <div id="historyView" style="display: none;">
+                    <div class="section-header">
+                        <h3 class="section-title">Lịch sử đơn hàng</h3>
+                        <button class="section-link" id="backToPosBtn">← Quay lại</button>
+                    </div>
+                    <div id="orderHistoryList" class="activities-list">
+                        <!-- Order history will be rendered here -->
+                    </div>
+                </div>
+
+                <div class="bottom-spacing"></div>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="page-settings" class="page">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-content">
+                    <h1 class="page-header-title">Cài đặt</h1>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Store Info -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Thông tin cửa hàng</h3>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-icon">
+                            <i data-lucide="store"></i>
+                        </div>
+                        <div class="settings-content">
+                            <div class="settings-label">Tên cửa hàng</div>
+                            <div class="settings-value">Cửa hàng Thú cưng</div>
+                        </div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-icon">
+                            <i data-lucide="package"></i>
+                        </div>
+                        <div class="settings-content">
+                            <div class="settings-label">Tổng sản phẩm</div>
+                            <div class="settings-value" id="totalProductsCount">0</div>
+                        </div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-icon">
+                            <i data-lucide="shopping-bag"></i>
+                        </div>
+                        <div class="settings-content">
+                            <div class="settings-label">Tổng đơn hàng</div>
+                            <div class="settings-value" id="totalOrdersCount">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Management -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Quản lý dữ liệu</h3>
+                    </div>
+
+                    <button class="settings-btn" id="exportDataBtn">
+                        <i data-lucide="download"></i>
+                        <div>
+                            <div class="settings-btn-title">Xuất dữ liệu</div>
+                            <div class="settings-btn-desc">Sao lưu toàn bộ dữ liệu</div>
+                        </div>
+                        <i data-lucide="chevron-right"></i>
+                    </button>
+
+                    <button class="settings-btn" id="importDataBtn">
+                        <i data-lucide="upload"></i>
+                        <div>
+                            <div class="settings-btn-title">Nhập dữ liệu</div>
+                            <div class="settings-btn-desc">Khôi phục từ file sao lưu</div>
+                        </div>
+                        <i data-lucide="chevron-right"></i>
+                    </button>
+
+                    <button class="settings-btn danger" id="clearDataBtn">
+                        <i data-lucide="trash-2"></i>
+                        <div>
+                            <div class="settings-btn-title">Xóa toàn bộ dữ liệu</div>
+                            <div class="settings-btn-desc">Xóa tất cả sản phẩm và đơn hàng</div>
+                        </div>
+                        <i data-lucide="chevron-right"></i>
+                    </button>
+                </div>
+
+                <!-- App Info -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Thông tin ứng dụng</h3>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-icon">
+                            <i data-lucide="info"></i>
+                        </div>
+                        <div class="settings-content">
+                            <div class="settings-label">Phiên bản</div>
+                            <div class="settings-value">1.0.0</div>
+                        </div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-icon">
+                            <i data-lucide="database"></i>
+                        </div>
+                        <div class="settings-content">
+                            <div class="settings-label">Lưu trữ</div>
+                            <div class="settings-value">LocalStorage (Browser)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bottom-spacing"></div>
+            </div>
+        </div>
+
+        <!-- Import File Input (Hidden) -->
+        <input type="file" id="importFileInput" accept=".json" style="display: none;">
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-page="dashboard">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Tổng quan</span>
+            </button>
+            <button class="nav-item" data-page="products">
+                <i data-lucide="package"></i>
+                <span>Sản phẩm</span>
+            </button>
+            <button class="nav-item" data-page="orders">
+                <i data-lucide="file-text"></i>
+                <span>Đơn hàng</span>
+            </button>
+            <button class="nav-item" data-page="settings">
+                <i data-lucide="settings"></i>
+                <span>Cài đặt</span>
+            </button>
+        </nav>
+
+        <!-- Add/Edit Product Modal -->
+        <div id="productModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="modalTitle">Thêm sản phẩm</h2>
+                    <button class="modal-close" id="closeModal">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+                <form id="productForm" class="modal-form">
+                    <div class="form-group">
+                        <label>Tên sản phẩm *</label>
+                        <input type="text" name="name" required placeholder="VD: Áo thun cho chó">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Mã SKU *</label>
+                            <input type="text" name="sku" required placeholder="VD: AT-001">
+                        </div>
+                        <div class="form-group">
+                            <label>Kích thước</label>
+                            <input type="text" name="size" placeholder="VD: M, L, XL">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Danh mục *</label>
+                        <select name="category" required>
+                            <option value="">Chọn danh mục</option>
+                            <option value="food">Đồ ăn</option>
+                            <option value="accessories">Phụ kiện</option>
+                            <option value="toys">Đồ chơi</option>
+                            <option value="clothes">Quần áo</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Giá bán *</label>
+                            <input type="number" name="price" required placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Giá nhập</label>
+                            <input type="number" name="cost" placeholder="0" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tồn kho *</label>
+                        <input type="number" name="stock" required placeholder="0" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hình ảnh (URL)</label>
+                        <input type="url" name="image" placeholder="https://...">
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" id="cancelBtn">Hủy</button>
+                        <button type="submit" class="btn-primary">Lưu sản phẩm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="utils.js"></script>
+    <script src="data.js"></script>
+    <script src="charts.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="products.js"></script>
+    <script src="reports.js"></script>
+    <script src="orders.js"></script>
+    <script src="settings.js"></script>
+    <script src="app.js"></script>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
