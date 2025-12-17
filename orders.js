@@ -305,4 +305,165 @@ function setupOrdersEventListeners() {
 
     // Back to POS
     document.getElementById('backToPosBtn')?.addEventListener('click', hideOrderHistory);
+
+    // Barcode scanner
+    setupBarcodeScanner();
+}
+
+// ===========================
+// BARCODE SCANNER
+// ===========================
+
+let html5QrcodeScanner = null;
+let scannerActive = false;
+
+/**
+ * Setup barcode scanner event listeners
+ */
+function setupBarcodeScanner() {
+    const scanBtn = document.getElementById('scanBarcodeBtn');
+    const closeScannerBtn = document.getElementById('closeScannerBtn');
+    const stopScannerBtn = document.getElementById('stopScannerBtn');
+    const scannerModal = document.getElementById('scannerModal');
+
+    // Open scanner
+    scanBtn?.addEventListener('click', async () => {
+        const hasPermission = await checkCameraPermission();
+        if (!hasPermission) {
+            showToast('Không thể truy cập camera. Vui lòng cấp quyền camera.', 'error');
+            return;
+        }
+        startBarcodeScanner();
+    });
+
+    // Close scanner
+    const closeScanner = () => {
+        stopBarcodeScanner();
+    };
+
+    closeScannerBtn?.addEventListener('click', closeScanner);
+    stopScannerBtn?.addEventListener('click', closeScanner);
+
+    // Close on backdrop click
+    scannerModal?.addEventListener('click', (e) => {
+        if (e.target === scannerModal) {
+            closeScanner();
+        }
+    });
+}
+
+/**
+ * Start barcode scanner
+ */
+function startBarcodeScanner() {
+    const modal = document.getElementById('scannerModal');
+    const resultDiv = document.getElementById('scannerResult');
+
+    modal.classList.add('active');
+    resultDiv.style.display = 'none';
+
+    // Initialize scanner if not already done
+    if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5Qrcode("scannerContainer");
+    }
+
+    // Scanner configuration
+    const config = {
+        fps: 10,
+        qrbox: { width: 250, height: 150 },
+        aspectRatio: 1.777778
+    };
+
+    // Start scanning
+    html5QrcodeScanner.start(
+        { facingMode: "environment" }, // Use back camera on mobile
+        config,
+        onScanSuccess,
+        onScanError
+    ).then(() => {
+        scannerActive = true;
+    }).catch(err => {
+        console.error('Scanner start error:', err);
+        showToast('Không thể khởi động camera', 'error');
+        stopBarcodeScanner();
+    });
+}
+
+/**
+ * Stop barcode scanner
+ */
+function stopBarcodeScanner() {
+    if (html5QrcodeScanner && scannerActive) {
+        html5QrcodeScanner.stop().then(() => {
+            scannerActive = false;
+            document.getElementById('scannerModal').classList.remove('active');
+            document.getElementById('scannerResult').style.display = 'none';
+        }).catch(err => {
+            console.error('Scanner stop error:', err);
+            scannerActive = false;
+            document.getElementById('scannerModal').classList.remove('active');
+        });
+    } else {
+        document.getElementById('scannerModal').classList.remove('active');
+    }
+}
+
+/**
+ * Handle successful barcode scan
+ */
+function onScanSuccess(decodedText, decodedResult) {
+    console.log('Scanned:', decodedText);
+
+    // Find product by barcode
+    const product = getProductByBarcode(decodedText);
+
+    const resultDiv = document.getElementById('scannerResult');
+    const resultText = document.getElementById('scannerResultText');
+
+    if (product) {
+        // Product found
+        resultText.textContent = `Đã quét: ${product.name}`;
+        resultDiv.style.display = 'block';
+
+        // Vibrate on success
+        vibrate(100);
+
+        // Add to cart
+        addToCart(product.id);
+
+        // Show success toast
+        showToast(`Đã thêm ${product.name} vào giỏ hàng`, 'success');
+
+        // Close scanner after 1 second
+        setTimeout(() => {
+            stopBarcodeScanner();
+        }, 1000);
+    } else {
+        // Product not found
+        resultDiv.style.display = 'block';
+        resultDiv.style.background = '#FFEBEE';
+        resultText.textContent = `Không tìm thấy sản phẩm với mã: ${decodedText}`;
+        resultText.style.color = 'var(--color-danger)';
+
+        // Vibrate twice for error
+        vibrate([100, 100, 100]);
+
+        showToast('Không tìm thấy sản phẩm', 'error');
+
+        // Reset result display after 2 seconds
+        setTimeout(() => {
+            resultDiv.style.display = 'none';
+            resultDiv.style.background = '#E8F5E9';
+            resultText.style.color = 'var(--color-success)';
+        }, 2000);
+    }
+}
+
+/**
+ * Handle scan errors (just log, don't show to user as errors happen frequently during scanning)
+ */
+function onScanError(errorMessage) {
+    // Silent - scanning errors are normal during the scanning process
+    // Only log to console for debugging
+    // console.log('Scan error:', errorMessage);
 }

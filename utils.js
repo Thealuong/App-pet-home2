@@ -40,17 +40,17 @@ function formatDate(date, includeTime = false) {
     if (!(date instanceof Date)) {
         date = new Date(date);
     }
-    
+
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
-    
+
     if (includeTime) {
         const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
         return `${day}/${month}/${year} ${hours}:${minutes}`;
     }
-    
+
     return `${day}/${month}/${year}`;
 }
 
@@ -63,18 +63,18 @@ function formatRelativeTime(date) {
     if (!(date instanceof Date)) {
         date = new Date(date);
     }
-    
+
     const now = new Date();
     const diffMs = now - date;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-    
+
     if (diffMins < 1) return 'Vừa xong';
     if (diffMins < 60) return `${diffMins} phút trước`;
     if (diffHours < 24) return `${diffHours} giờ trước`;
     if (diffDays < 7) return `${diffDays} ngày trước`;
-    
+
     return formatDate(date);
 }
 
@@ -88,7 +88,7 @@ function calculatePercentageChange(current, previous) {
     if (previous === 0) {
         return { percentage: current > 0 ? 100 : 0, isPositive: current > 0 };
     }
-    
+
     const change = ((current - previous) / previous) * 100;
     return {
         percentage: Math.abs(change).toFixed(1),
@@ -123,12 +123,12 @@ function showToast(message, type = 'info') {
     const toast = document.getElementById('toast');
     toast.textContent = message;
     toast.className = `toast ${type}`;
-    
+
     // Trigger reflow to restart animation
     void toast.offsetWidth;
-    
+
     toast.classList.add('show');
-    
+
     setTimeout(() => {
         toast.classList.remove('show');
     }, 3000);
@@ -150,26 +150,26 @@ function generateId() {
 function getDateRange(period) {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
+
     switch (period) {
         case 'today':
             return {
                 start: today,
                 end: new Date(today.getTime() + 86400000 - 1)
             };
-        
+
         case 'week':
             const weekStart = new Date(today);
             weekStart.setDate(today.getDate() - today.getDay());
             const weekEnd = new Date(weekStart);
             weekEnd.setDate(weekStart.getDate() + 7);
             return { start: weekStart, end: weekEnd };
-        
+
         case 'month':
             const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
             const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
             return { start: monthStart, end: monthEnd };
-        
+
         default:
             return { start: today, end: today };
     }
@@ -216,7 +216,7 @@ function sortBy(array, field, order = 'asc') {
     return [...array].sort((a, b) => {
         const aVal = a[field];
         const bVal = b[field];
-        
+
         if (order === 'asc') {
             return aVal > bVal ? 1 : -1;
         } else {
@@ -262,4 +262,41 @@ function importFromJSON(file) {
         reader.onerror = () => reject(reader.error);
         reader.readAsText(file);
     });
+}
+
+/**
+ * Check if device is mobile
+ * @returns {boolean} True if mobile device
+ */
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+/**
+ * Trigger vibration feedback (mobile only)
+ * @param {number} duration - Vibration duration in milliseconds
+ */
+function vibrate(duration = 100) {
+    if ('vibrate' in navigator) {
+        navigator.vibrate(duration);
+    }
+}
+
+/**
+ * Check if camera permission is available
+ * @returns {Promise<boolean>} Promise resolving to permission status
+ */
+async function checkCameraPermission() {
+    try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return false;
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        stream.getTracks().forEach(track => track.stop());
+        return true;
+    } catch (error) {
+        console.error('Camera permission error:', error);
+        return false;
+    }
 }

@@ -48,6 +48,7 @@ function addProduct(product) {
         stock: parseInt(product.stock),
         size: product.size || '',
         image: product.image || '',
+        barcode: product.barcode || '',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
     };
@@ -112,8 +113,19 @@ function searchProducts(query) {
 
     return products.filter(p =>
         p.name.toLowerCase().includes(lowerQuery) ||
-        p.sku.toLowerCase().includes(lowerQuery)
+        p.sku.toLowerCase().includes(lowerQuery) ||
+        (p.barcode && p.barcode.toLowerCase().includes(lowerQuery))
     );
+}
+
+/**
+ * Get product by barcode
+ * @param {string} barcode - Barcode string
+ * @returns {object|null} Product or null
+ */
+function getProductByBarcode(barcode) {
+    const products = getProducts();
+    return products.find(p => p.barcode && p.barcode === barcode) || null;
 }
 
 /**
@@ -355,7 +367,7 @@ function initializeSampleData() {
         return;
     }
 
-    // Sample products
+    // Sample products with barcodes (EAN-13 format)
     const sampleProducts = [
         {
             name: 'Áo Thun Nam Basic',
@@ -365,7 +377,8 @@ function initializeSampleData() {
             cost: 80000,
             stock: 24,
             size: 'L',
-            image: ''
+            image: '',
+            barcode: '8934567890123'
         },
         {
             name: 'Quần Jeans Slimfit',
@@ -375,7 +388,8 @@ function initializeSampleData() {
             cost: 200000,
             stock: 3,
             size: '32',
-            image: ''
+            image: '',
+            barcode: '8934567890130'
         },
         {
             name: 'Giày Sneaker White',
@@ -385,7 +399,8 @@ function initializeSampleData() {
             cost: 300000,
             stock: 0,
             size: '41',
-            image: ''
+            image: '',
+            barcode: '8934567890147'
         },
         {
             name: 'Áo Khoác Bomber',
@@ -395,7 +410,8 @@ function initializeSampleData() {
             cost: 250000,
             stock: 12,
             size: 'XL',
-            image: ''
+            image: '',
+            barcode: '8934567890154'
         },
         {
             name: 'Thức ăn cho chó Royal Canin',
@@ -405,7 +421,8 @@ function initializeSampleData() {
             cost: 350000,
             stock: 15,
             size: '1kg',
-            image: ''
+            image: '',
+            barcode: '8934567890161'
         },
         {
             name: 'Vòng cổ cho mèo',
@@ -415,7 +432,8 @@ function initializeSampleData() {
             cost: 40000,
             stock: 30,
             size: 'S',
-            image: ''
+            image: '',
+            barcode: '8934567890178'
         }
     ];
 

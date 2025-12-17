@@ -19,6 +19,9 @@
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- HTML5 QR Code / Barcode Scanner -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 
 <body>
@@ -355,6 +358,9 @@
                         <div class="search-bar" style="margin-bottom: 16px;">
                             <i data-lucide="search" class="search-icon"></i>
                             <input type="text" placeholder="Tìm sản phẩm hoặc quét mã..." id="orderProductSearch">
+                            <button class="icon-btn primary" id="scanBarcodeBtn" title="Quét mã vạch">
+                                <i data-lucide="scan"></i>
+                            </button>
                         </div>
 
                         <!-- Available Products -->
@@ -586,6 +592,42 @@
                         <button type="submit" class="btn-primary">Lưu sản phẩm</button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+
+        <!-- Barcode Scanner Modal -->
+        <div id="scannerModal" class="modal">
+            <div class="scanner-modal-content">
+                <div class="scanner-header">
+                    <h2 class="scanner-title">Quét mã vạch</h2>
+                    <button class="modal-close" id="closeScannerBtn">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+
+                <div class="scanner-instructions">
+                    <i data-lucide="info" style="width: 16px; height: 16px;"></i>
+                    <span>Đưa mã vạch vào khung hình để quét</span>
+                </div>
+
+                <div id="scannerContainer" class="scanner-container">
+                    <!-- Scanner will be rendered here -->
+                </div>
+
+                <div id="scannerResult" class="scanner-result" style="display: none;">
+                    <div class="scanner-result-icon">
+                        <i data-lucide="check-circle"></i>
+                    </div>
+                    <div class="scanner-result-text" id="scannerResultText"></div>
+                </div>
+
+                <div class="scanner-actions">
+                    <button class="btn-secondary" id="stopScannerBtn">
+                        <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+                        <span>Đóng</span>
+                    </button>
+                </div>
             </div>
         </div>
 
