@@ -546,8 +546,8 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Mã SKU *</label>
-                            <input type="text" name="sku" required placeholder="VD: AT-001">
+                            <label>Mã SKU / Mã vạch</label>
+                            <input type="text" name="sku" placeholder="VD: AT-001 hoặc mã vạch">
                         </div>
                         <div class="form-group">
                             <label>Kích thước</label>
@@ -583,8 +583,20 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Hình ảnh (URL)</label>
-                        <input type="url" name="image" placeholder="https://...">
+                        <label>Hình ảnh</label>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button type="button" class="btn-secondary" id="selectImageBtn" style="flex-shrink: 0;">
+                                <i data-lucide="upload" style="width: 16px; height: 16px;"></i>
+                                <span>Chọn hình ảnh</span>
+                            </button>
+                            <input type="file" id="productImageInput" accept="image/*" style="display: none;" />
+                            <input type="text" name="image" id="imagePreviewText" placeholder="Chưa chọn hình ảnh"
+                                readonly style="flex: 1; background-color: #f5f5f5; cursor: not-allowed;">
+                        </div>
+                        <div id="imagePreview" style="margin-top: 12px; display: none;">
+                            <img id="previewImg" src="" alt="Preview"
+                                style="max-width: 100%; max-height: 200px; border-radius: 8px; object-fit: contain;" />
+                        </div>
                     </div>
 
                     <div class="modal-actions">

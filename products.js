@@ -47,10 +47,14 @@ function renderProducts() {
     } else {
         productsList.innerHTML = products.map(product => {
             const stockStatus = getStockStatus(product.stock);
+            const imageHtml = product.image
+                ? `<img src="${product.image}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover;">`
+                : `<i data-lucide="image"></i>`;
+
             return `
                 <div class="product-card" data-product-id="${product.id}">
-                    <div class="product-image placeholder">
-                        <i data-lucide="image"></i>
+                    <div class="product-image ${!product.image ? 'placeholder' : ''}">
+                        ${imageHtml}
                     </div>
                     <div class="product-info">
                         <div class="product-name">${product.name}</div>
@@ -126,6 +130,50 @@ function setupProductsEventListeners() {
             closeProductModal();
         }
     });
+
+    // Image selection handler
+    document.getElementById('selectImageBtn').addEventListener('click', () => {
+        document.getElementById('productImageInput').click();
+    });
+
+    // Image input change handler
+    document.getElementById('productImageInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showToast('Vui lòng chọn file hình ảnh', 'error');
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('Kích thước file không được vượt quá 5MB', 'error');
+                return;
+            }
+
+            // Read and display image
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const imageData = event.target.result;
+
+                // Update preview
+                const previewImg = document.getElementById('previewImg');
+                const imagePreview = document.getElementById('imagePreview');
+                const imagePreviewText = document.getElementById('imagePreviewText');
+
+                previewImg.src = imageData;
+                imagePreview.style.display = 'block';
+                imagePreviewText.value = file.name;
+
+                // Store image data in hidden input
+                const form = document.getElementById('productForm');
+                const imageInput = form.querySelector('input[name="image"]');
+                imageInput.value = imageData; // Store base64 data
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 }
 
 /**
@@ -135,6 +183,15 @@ function openProductModal(productId = null) {
     const modal = document.getElementById('productModal');
     const form = document.getElementById('productForm');
     const title = document.getElementById('modalTitle');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    const imagePreviewText = document.getElementById('imagePreviewText');
+
+    // Reset image preview
+    imagePreview.style.display = 'none';
+    previewImg.src = '';
+    imagePreviewText.value = '';
+    document.getElementById('productImageInput').value = '';
 
     if (productId) {
         // Edit mode
@@ -143,13 +200,20 @@ function openProductModal(productId = null) {
 
         title.textContent = 'Chỉnh sửa sản phẩm';
         form.name.value = product.name;
-        form.sku.value = product.sku;
+        form.sku.value = product.sku || '';
         form.category.value = product.category;
         form.price.value = product.price;
         form.cost.value = product.cost;
         form.stock.value = product.stock;
         form.size.value = product.size;
-        form.image.value = product.image;
+        form.image.value = product.image || '';
+
+        // Show image preview if exists
+        if (product.image) {
+            previewImg.src = product.image;
+            imagePreview.style.display = 'block';
+            imagePreviewText.value = 'Hình ảnh hiện tại';
+        }
     } else {
         // Add mode
         editingProductId = null;
@@ -186,6 +250,13 @@ function handleProductSubmit(e) {
         size: formData.get('size'),
         image: formData.get('image')
     };
+
+    // Auto-generate SKU if not provided
+    if (!productData.sku || productData.sku.trim() === '') {
+        const timestamp = Date.now();
+        const randomNum = Math.floor(Math.random() * 1000);
+        productData.sku = `AUTO-${timestamp}-${randomNum}`;
+    }
 
     try {
         if (editingProductId) {
