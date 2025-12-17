@@ -125,7 +125,11 @@ function searchProducts(query) {
  */
 function getProductByBarcode(barcode) {
     const products = getProducts();
-    return products.find(p => p.barcode && p.barcode === barcode) || null;
+    // Search by both SKU and barcode field (SKU can be the barcode)
+    return products.find(p =>
+        (p.barcode && p.barcode === barcode) ||
+        (p.sku && p.sku === barcode)
+    ) || null;
 }
 
 /**

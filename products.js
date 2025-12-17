@@ -200,11 +200,13 @@ function openProductModal(productId = null) {
     const imagePreview = document.getElementById('imagePreview');
     const previewImg = document.getElementById('previewImg');
     const imagePreviewText = document.getElementById('imagePreviewText');
+    const productImageData = document.getElementById('productImageData');
 
     // Reset image preview
     imagePreview.style.display = 'none';
     previewImg.src = '';
     imagePreviewText.value = '';
+    productImageData.value = '';
     document.getElementById('productImageInput').value = '';
 
     if (productId) {
@@ -220,7 +222,9 @@ function openProductModal(productId = null) {
         form.cost.value = product.cost;
         form.stock.value = product.stock;
         form.size.value = product.size;
-        form.image.value = product.image || '';
+
+        // Set image data to hidden input
+        productImageData.value = product.image || '';
 
         // Show image preview if exists
         if (product.image) {
@@ -233,6 +237,8 @@ function openProductModal(productId = null) {
         editingProductId = null;
         title.textContent = 'Thêm sản phẩm';
         form.reset();
+        // Reset hidden input explicitly
+        productImageData.value = '';
     }
 
     modal.classList.add('active');
