@@ -174,6 +174,20 @@ function setupProductsEventListeners() {
             reader.readAsDataURL(file);
         }
     });
+
+    // Scan SKU barcode button
+    document.getElementById('scanSkuBtn').addEventListener('click', async () => {
+        // Check camera permission
+        const hasPermission = await checkCameraPermission();
+        if (!hasPermission) {
+            showToast('Không thể truy cập camera. Vui lòng cấp quyền camera.', 'error');
+            return;
+        }
+
+        // Set scanner context to product SKU
+        window.scannerContext = 'product-sku';
+        startBarcodeScanner();
+    });
 }
 
 /**

@@ -547,7 +547,13 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Mã SKU / Mã vạch</label>
-                            <input type="text" name="sku" placeholder="VD: AT-001 hoặc mã vạch">
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" name="sku" id="productSkuInput" placeholder="VD: AT-001 hoặc mã vạch"
+                                    style="flex: 1;">
+                                <button type="button" class="icon-btn primary" id="scanSkuBtn" title="Quét mã vạch">
+                                    <i data-lucide="scan" style="width: 18px; height: 18px;"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Kích thước</label>

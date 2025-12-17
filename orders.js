@@ -414,48 +414,74 @@ function stopBarcodeScanner() {
 function onScanSuccess(decodedText, decodedResult) {
     console.log('Scanned:', decodedText);
 
-    // Find product by barcode
-    const product = getProductByBarcode(decodedText);
-
     const resultDiv = document.getElementById('scannerResult');
     const resultText = document.getElementById('scannerResultText');
 
-    if (product) {
-        // Product found
-        resultText.textContent = `Đã quét: ${product.name}`;
+    // Check scanner context
+    const context = window.scannerContext || 'pos';
+
+    if (context === 'product-sku') {
+        // Scanning for product SKU input
+        resultText.textContent = `Đã quét mã: ${decodedText}`;
         resultDiv.style.display = 'block';
 
         // Vibrate on success
         vibrate(100);
 
-        // Add to cart
-        addToCart(product.id);
+        // Fill SKU input
+        const skuInput = document.getElementById('productSkuInput');
+        if (skuInput) {
+            skuInput.value = decodedText;
+            showToast('Đã điền mã vạch vào SKU', 'success');
+        }
 
-        // Show success toast
-        showToast(`Đã thêm ${product.name} vào giỏ hàng`, 'success');
-
-        // Close scanner after 1 second
+        // Close scanner after 800ms
         setTimeout(() => {
             stopBarcodeScanner();
-        }, 1000);
+            // Reset context
+            window.scannerContext = 'pos';
+        }, 800);
     } else {
-        // Product not found
-        resultDiv.style.display = 'block';
-        resultDiv.style.background = '#FFEBEE';
-        resultText.textContent = `Không tìm thấy sản phẩm với mã: ${decodedText}`;
-        resultText.style.color = 'var(--color-danger)';
+        // Default POS context - find product and add to cart
+        const product = getProductByBarcode(decodedText);
 
-        // Vibrate twice for error
-        vibrate([100, 100, 100]);
+        if (product) {
+            // Product found
+            resultText.textContent = `Đã quét: ${product.name}`;
+            resultDiv.style.display = 'block';
 
-        showToast('Không tìm thấy sản phẩm', 'error');
+            // Vibrate on success
+            vibrate(100);
 
-        // Reset result display after 2 seconds
-        setTimeout(() => {
-            resultDiv.style.display = 'none';
-            resultDiv.style.background = '#E8F5E9';
-            resultText.style.color = 'var(--color-success)';
-        }, 2000);
+            // Add to cart
+            addToCart(product.id);
+
+            // Show success toast
+            showToast(`Đã thêm ${product.name} vào giỏ hàng`, 'success');
+
+            // Close scanner after 1 second
+            setTimeout(() => {
+                stopBarcodeScanner();
+            }, 1000);
+        } else {
+            // Product not found
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = '#FFEBEE';
+            resultText.textContent = `Không tìm thấy sản phẩm với mã: ${decodedText}`;
+            resultText.style.color = 'var(--color-danger)';
+
+            // Vibrate twice for error
+            vibrate([100, 100, 100]);
+
+            showToast('Không tìm thấy sản phẩm', 'error');
+
+            // Reset result display after 2 seconds
+            setTimeout(() => {
+                resultDiv.style.display = 'none';
+                resultDiv.style.background = '#E8F5E9';
+                resultText.style.color = 'var(--color-success)';
+            }, 2000);
+        }
     }
 }
 
